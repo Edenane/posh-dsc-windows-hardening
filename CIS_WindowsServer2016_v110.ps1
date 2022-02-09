@@ -161,11 +161,12 @@ Configuration CIS_WindowsServer2016_v110 {
       #     Identity     = 'Guests'
       #  }
 
+      # disabled for AWS - Does not include ‘Local account and member of Administrators group’ to allow for remote login.
       #  2.2.21 (L1) Ensure 'Deny access to this computer from the network' is set to 'Guests, Local account and member of Administrators group' (MS only)
-       UserRightsAssignment Denyaccesstothiscomputerfromthenetwork {
-          Policy       = 'Deny_access_to_this_computer_from_the_network'
-          Identity     = 'Guests, Local account, Administrators'
-       }
+      # UserRightsAssignment Denyaccesstothiscomputerfromthenetwork {
+      #    Policy       = 'Deny_access_to_this_computer_from_the_network'
+      #    Identity     = 'Guests, Local account, Administrators'
+      # }
 
       #  2.2.22 (L1) Ensure 'Deny log on as a batch job' to include 'Guests'
        UserRightsAssignment Denylogonasabatchjob {
@@ -337,18 +338,21 @@ Configuration CIS_WindowsServer2016_v110 {
        #Source: https://github.com/PowerShell/SecurityPolicyDsc
        SecurityOption AccountSecurityOptions {
          Name                                   = 'AccountSecurityOptions'
+         # Disabled for AWS - Administrator account remains enabled in support of allowing login to the instance after launch.
          # 2.3.1.1 (L1) Ensure 'Accounts: Administrator account status' is set to 'Disabled' (MS only)
-         Accounts_Administrator_account_status  = 'Disabled'
+         #Accounts_Administrator_account_status  = 'Disabled'
          # 2.3.1.2 (L1) Ensure 'Accounts: Block Microsoft accounts' is set to 'Users can't add or log on with Microsoft accounts'
          Accounts_Block_Microsoft_accounts = 'Users cant add or log on with Microsoft accounts'
          # 2.3.1.3 (L1) Ensure 'Accounts: Guest account status' is set to 'Disabled' (MS only)
          Accounts_Guest_account_status = 'Disabled'
          # 2.3.1.4 (L1) Ensure 'Accounts: Limit local account use of blank passwords to console logon only' is set to 'Enabled'
          Accounts_Limit_local_account_use_of_blank_passwords_to_console_logon_only = 'Enabled'
+         # Disabled for AWS - We have retained “Administrator” as the default administrative account for the sake of provisioning scripts that may not have knowledge of “CISAdmin” as defined in the CIS remediation kit.
          # 2.3.1.5 (L1) Configure 'Accounts: Rename administrator account'
-         Accounts_Rename_administrator_account = 'User_Adm' # WARNING! Any value different from Administrator
+         # Disabled for AWS - Sysprep process renames this account to default of ‘Guest’.
+         #Accounts_Rename_administrator_account = 'User_Adm' # WARNING! Any value different from Administrator
          # 2.3.1.6 (L1) Configure 'Accounts: Rename guest account'
-         Accounts_Rename_guest_account = 'User_Guest' # WARNING! Any value different from Guest
+         #Accounts_Rename_guest_account = 'User_Guest' # WARNING! Any value different from Guest
          # 2.3.2.1 (L1) Ensure 'Audit: Force audit policy subcategory settings (Windows Vista or later) to override audit policy category settings' is set to 'Enabled'
          Audit_Force_audit_policy_subcategory_settings_Windows_Vista_or_later_to_override_audit_policy_category_settings = 'Enabled'
          # 2.3.2.2 (L1) Ensure 'Audit: Shut down system immediately if unable to log security audits' is set to 'Disabled'
@@ -381,8 +385,9 @@ Configuration CIS_WindowsServer2016_v110 {
          Interactive_logon_Do_not_require_CTRL_ALT_DEL = 'Disabled' 
          # 2.3.7.3 (L1) Ensure 'Interactive logon: Machine inactivity limit' is set to '900 or fewer second(s), but not 0'
          Interactive_logon_Machine_inactivity_limit = '900' 
+         # Disabled for AWS - This recommendation is not configured as it causes issues with AWS Scanner.
          # 2.3.7.4 (L1) Configure 'Interactive logon: Message text for users attempting to log on' 
-         Interactive_logon_Message_text_for_users_attempting_to_log_on = 'This computer system is the property of Acme Corporation and is for authorised use by employees and designated contractors only. By continuing to use this system you indicate your awareness of and consent to these terms and conditions of use.It is the users responsibility to LOG OFF IMMEDIATELY if you do not agree to the conditions stated in this notice.'
+         #Interactive_logon_Message_text_for_users_attempting_to_log_on = 'This computer system is the property of Acme Corporation and is for authorised use by employees and designated contractors only. By continuing to use this system you indicate your awareness of and consent to these terms and conditions of use.It is the users responsibility to LOG OFF IMMEDIATELY if you do not agree to the conditions stated in this notice.'
          # 2.3.7.5 (L1) Configure 'Interactive logon: Message title for users attempting to log on'
          #Interactive_logon_Message_title_for_users_attempting_to_log_on = '<Logon Warning>'
          Interactive_logon_Message_title_for_users_attempting_to_log_on = 'Logon Warning'
@@ -672,24 +677,25 @@ Configuration CIS_WindowsServer2016_v110 {
           ValueType    = 'DWord'
           ValueData    = '0'
        }
-
+       # Disabled for AWS - This recommendation is not configured as it causes issues with RDP.
        #  9.3.5 (L1) Ensure 'Windows Firewall: Public: Settings: Apply local firewall rules' is set to 'No'
-       Registry 'AllowLocalPolicyMerge' {
-          Ensure       = 'Present'
-          Key          = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile'
-          ValueName    = 'AllowLocalPolicyMerge'
-          ValueType    = 'DWord'
-          ValueData    = '0'
-       }
+       #Registry 'AllowLocalPolicyMerge' {
+       #   Ensure       = 'Present'
+       #   Key          = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile'
+       #   ValueName    = 'AllowLocalPolicyMerge'
+       #   ValueType    = 'DWord'
+       #   ValueData    = '0'
+       #}
 
+       # Disabled for AWS - This recommendation is not configured as it causes issues with RDP.
        #  9.3.6 (L1) Ensure 'Windows Firewall: Public: Settings: Apply local connection security rules' is set to 'No'
-       Registry 'AllowLocalIPsecPolicyMerge' {
-          Ensure       = 'Present'
-          Key          = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile'
-          ValueName    = 'AllowLocalIPsecPolicyMerge'
-          ValueType    = 'DWord'
-          ValueData    = '0'
-       }
+       #Registry 'AllowLocalIPsecPolicyMerge' {
+       #   Ensure       = 'Present'
+       #   Key          = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile'
+       #   ValueName    = 'AllowLocalIPsecPolicyMerge'
+       #   ValueType    = 'DWord'
+       #   ValueData    = '0'
+       #}
 
        #  9.3.7 (L1) Ensure 'Windows Firewall: Public: Logging: Name' is set to '%SYSTEMROOT%\System32\logfiles\firewall\publicfw.log'
        Registry 'LogFilePathPublic' {
@@ -2367,14 +2373,15 @@ Configuration CIS_WindowsServer2016_v110 {
           ValueData  = '1'
        }
 
+       # Disabled for AWS - This recommendation is not configured as it causes issues with RDP.
        #  18.9.58.3.9.1 (L1) Ensure 'Always prompt for password upon connection' is set to 'Enabled'
-       Registry 'fPromptForPassword' {
-          Ensure     = 'Present'
-          Key        = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services'
-          ValueName  = 'fPromptForPassword'
-          ValueType  = 'DWord'
-          ValueData  = '1'
-       }
+       #Registry 'fPromptForPassword' {
+       #   Ensure     = 'Present'
+       #   Key        = 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services'
+       #   ValueName  = 'fPromptForPassword'
+       #   ValueType  = 'DWord'
+       #   ValueData  = '1'
+       #}
 
        #  18.9.58.3.9.2 (L1) Ensure 'Require secure RPC communication' is set to 'Enabled'
        Registry 'fEncryptRPCTraffic' {
